@@ -14,5 +14,7 @@ setup(
                       'gunicorn == 20.1.0',
                       'click == 8.0.1',
                       'pluginbase == 1.0.1',
-                      'python-dotenv == 0.18.0']
+                      'python-dotenv == 0.18.0',
+                      'requests == 2.26.0',
+                      'python-multipart == 0.0.5']
 )

@@ -17,9 +17,10 @@ async def root(request: Request):
     
     for service in plugins.list_plugins():
         
-        pids = config.settings[f'{service}_pids']
+        pids = config.settings.pids
         if context['project_id'] in pids:
-            p_settings = config.settings[f"{service}_{context['project_id']}"]
+            p_settings = getattr(config.settings,
+                                 f"{service}_{context['project_id']}")
             form_triggers = p_settings['form_triggers']
             
             if context['instrument'] in form_triggers:

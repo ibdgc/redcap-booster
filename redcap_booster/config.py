@@ -7,7 +7,7 @@ import os
 class Settings(BaseSettings):
     
     plugin_dirs: List[str] = ['./redcap_services']
-    pids: List[int] = []
+    pids: List[str] = []
     
     class Config:
         env_file = '.env'
