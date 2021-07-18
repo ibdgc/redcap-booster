@@ -1,0 +1,2 @@
+excludeInBrowser = "{*.pyc,__pycache__,*.egg-info}"
+excludeInFolderSearch = "{*.pyc,__pycache__,*.egg-info}"
