@@ -1,14 +1,9 @@
 """CLI tools for REDCap Booster"""
 
 import click
-from pluginbase import PluginBase
 from redcap_booster import config
-import os
 
-app_path = os.path.abspath(os.path.dirname(__file__))
-plugin_base = PluginBase(package='plugins',
-                         searchpath=[os.path.join(app_path,'services')])
-plugins = plugin_base.make_plugin_source(searchpath=config.settings.plugin_dirs)
+plugins = config.plugins
 
 @click.group()
 def cli():
@@ -21,7 +16,16 @@ def list_services():
     for service in plugins.list_plugins():
         click.echo(f'{service}')
 
+@click.command()
+@click.argument('service')
+def list_pids(service):
+    """List projects configured to use service"""
+    for pid in config.settings.pids:
+        if getattr(config.settings, f'{service}_{pid}'):
+            click.echo(pid)
+
 cli.add_command(list_services)
+cli.add_command(list_pids)
 
 for service in plugins.list_plugins():
     plugin = plugins.load_plugin(service)
