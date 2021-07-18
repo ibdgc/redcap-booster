@@ -6,6 +6,9 @@ setup(
     url='https://rcg.bsd.uchicago.edu/gitlab/rcg/redcap-booster.git',
     author='Research Computing Group',
     description='API for providing external services to REDCap',
+    entry_points = {
+        'console_scripts':['rbutils=redcap_booster.cli:cli'],
+    },
     install_requires=['fastapi == 0.66.0',
                       'uvicorn[standard] == 0.14.0',
                       'gunicorn == 20.1.0',
