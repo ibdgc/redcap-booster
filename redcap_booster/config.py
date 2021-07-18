@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = '.env'
+        # For storing REDCap API tokens
+        secrets_dir = './.secrets'
     
     @classmethod
     def with_services(cls, **field_defs):
@@ -23,8 +25,13 @@ plugin_base = PluginBase(package='plugins',
                          searchpath=[os.path.join(app_path,'services')])
 plugins = plugin_base.make_plugin_source(searchpath=settings.plugin_dirs)
 
-# Service-specific settings
+# REDCap API tokens
+# Create file in secrets_dir named token_[pid] containing API token for project
 field_defs = {}
+for pid in settings.pids:
+    field_defs[f'token_{pid}'] = (str, '')
+
+# Service-specific settings
 for service in plugins.list_plugins():
     field_defs[f'{service}'] = (dict, {})
 
