@@ -3,6 +3,7 @@
 import sqlite3
 from redcap_booster import config
 import random
+import sys
 
 con = sqlite3.connect(config.settings.id_gen['db'])
 cur = con.cursor()
@@ -14,6 +15,17 @@ def create_table(pid):
                  '    id TEXT UNIQUE NOT NULL,\n'
                  '    record TEXT UNIQUE\n'
                  ')')
+
+def import_map(pid, map):
+    assert pid.isdecimal()
+    create_table(pid)
+    
+    cur.execute(f'SELECT * from pid_{pid} LIMIT 1')
+    if cur.fetchone():
+        sys.exit(f'Table pid_{pid} is not empty')
+    
+    cur.executemany(f'INSERT INTO pid_{pid} VALUES (NULL,?,?)', map)
+    con.commit()
 
 def load_ids(pid, ids, random_order=False):
     assert pid.isdecimal()
@@ -28,7 +40,7 @@ def load_ids(pid, ids, random_order=False):
     if random_order:
         random.shuffle(new_ids)
     
-    cur.executemany(f'INSERT INTO pid_{pid} VALUES (NULL, ?, NULL)', new_ids)
+    cur.executemany(f'INSERT INTO pid_{pid} VALUES (NULL,?,NULL)', new_ids)
     con.commit()
     print(f'{len(new_ids)} new IDs loaded for project {pid}')
 
@@ -49,7 +61,7 @@ def get_id(pid, record):
             con.commit()
             return id[0]
 
-def get_map(pid):
+def export_map(pid):
     assert pid.isdecimal()
     
     map = []
