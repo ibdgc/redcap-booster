@@ -6,7 +6,8 @@ import os
 # Global settings (i.e., not service-specific)
 class Settings(BaseSettings):
     
-    plugin_dirs: List[str] = ['./redcap_services']
+    root_path: str = ''
+    plugin_dirs: List[str] = ['./services']
     pids: List[str] = []
     
     class Config:

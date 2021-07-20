@@ -5,7 +5,7 @@ from starlette.requests import Request
 from redcap_booster import config
 
 plugins = config.plugins
-app = FastAPI()
+app = FastAPI(root_path=config.settings.root_path)
 
 @app.post('/')
 async def root(request: Request, key: str = None):
