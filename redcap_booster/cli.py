@@ -30,7 +30,8 @@ cli.add_command(list_pids)
 for service in plugins.list_plugins():
     plugin = plugins.load_plugin(service)
     try:
-        cli.add_command(plugin.cli)
+        # Replace underscores with dashes for consistency with commands
+        cli.add_command(plugin.cli, name=service.replace("_", "-"))
     except AttributeError:
         pass
 
