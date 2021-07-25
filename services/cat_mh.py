@@ -24,7 +24,7 @@ def run(config, context, service=service, db=db):
         id0,token0,id3,token3,id6,token6,id9,token9,id12,token12 = tokens.split(',')
     
     p_settings = getattr(config.settings, f'{service}_{pid}')
-    record_id = getattr(p_settings, 'record_id', 'record_id')
+    record_id = p_settings.get('record_id', 'record_id')
     
     data = json.dumps([{record_id:context['record'],
                         'catmh_id0':id0,

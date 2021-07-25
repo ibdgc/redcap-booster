@@ -31,7 +31,7 @@ def run(config, context, service=service, db=db):
         return
     
     p_settings = getattr(config.settings, f'{service}_{pid}')
-    record_id = getattr(p_settings, 'record_id', 'record_id')
+    record_id = p_settings.get('record_id', 'record_id')
     id_field = p_settings['id_field']
     
     data = json.dumps([{record_id:context['record'], id_field:id}],
