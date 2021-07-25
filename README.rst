@@ -45,6 +45,14 @@ project-specific API key that can be generated in Python with::
     import secrets
     secrets.token_urlsafe(24)
 
+Finally, within REDCap, under "Project Setup" click on the "Additional
+customizations" button. Check "Data Entry Trigger" and enter the URL where the
+API is available, e.g.::
+
+    https://rcg.bsd.uchicago.edu/redcap-booster/?key=<api_key>
+
+where <api_key> refers to the API key generated above.
+
 
 Built-In Services
 =================
