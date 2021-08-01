@@ -38,7 +38,7 @@ def run(config, context, service=service):
     filename = f'{record}_{datetime.now().strftime("%Y-%m-%dT%H%M%S")}.pdf'
     
     settings_file = os.path.join(config.Settings.Config.secrets_dir,
-                                 '834482600_887iq6en_config.json')
+                                 p_settings['settings_file'])
     auth = JWTAuth.from_settings_file(settings_file)
     client = Client(auth)
     
