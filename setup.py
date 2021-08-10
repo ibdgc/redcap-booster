@@ -17,5 +17,6 @@ setup(
                       'python-dotenv == 0.18.0',
                       'requests == 2.26.0',
                       'python-multipart == 0.0.5',
-                      'boxsdk[jwt] == 2.12.1']
+                      'boxsdk[jwt] == 2.12.1',
+                      'PyPDF2 == 1.26.0']
 )

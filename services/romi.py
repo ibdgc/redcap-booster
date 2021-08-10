@@ -5,8 +5,11 @@ from boxsdk import JWTAuth, Client, BoxAPIException
 from io import BytesIO
 from logging.handlers import SysLogHandler, logging
 from datetime import datetime
+from PyPDF2 import PdfFileMerger, PdfFileReader
+from PyPDF2.utils import PdfReadError
 import os
 import json
+import requests
 
 service = 'romi'
 
@@ -39,7 +42,7 @@ def run(config, context, service=service):
     grp = p_settings['grp']
     cmp_report_form = p_settings['cmp_report_form']
     
-    # Get record_id in Case Management project
+    # Get corresponding record_id in Case Management project
     payload = {'content':'record',
                'format':'json',
                'fields[0]':record_id,
@@ -57,7 +60,7 @@ def run(config, context, service=service):
     if not cmp_record:
         return
     
-    # Get Interview ID from Data Entry project
+    # Get CAT-MH report
     payload = {'content':'record',
                'format':'json',
                'records':record,
@@ -66,8 +69,14 @@ def run(config, context, service=service):
     records = json.loads(redcap_api(config, context, payload).content)
     if records:
         interview_id = records[0][catmh_id0]
+        url = p_settings['url']
+        keyfile = os.path.join(config.Settings.Config.secrets_dir,
+                               'catmh_report_key')
+        with open(keyfile, 'r') as f:
+            key = f.read().replace('\n', '')
+        cat_pdf = requests.get(f'{url}/report/{interview_id}?key={key}').content
     else:
-        interview_id = None
+        cat_pdf = None
     
     # Retrieve PDFs
     payload = {'content':'pdf',
@@ -80,12 +89,20 @@ def run(config, context, service=service):
                'instrument':romi_report_form}
     romi_pdf = redcap_api(config, context, payload).content
     
-    # filename = f'{record}_{datetime.now().strftime("%Y-%m-%dT%H%M%S")}.pdf'
-    #
-    # settings_file = os.path.join(config.Settings.Config.secrets_dir,
-    #                              p_settings['settings_file'])
-    # auth = JWTAuth.from_settings_file(settings_file)
-    # client = Client(auth)
-    #
-    # folder = get_prcpt_folder(context, dags, client)
-    # client.folder(folder).upload_stream(BytesIO(pdf), filename)
+    merger = PdfFileMerger()
+    for file in [cmp_pdf, cat_pdf, romi_pdf]:
+        try:
+            merger.append(PdfFileReader(BytesIO(file)))
+        except PdfReadError:
+            pass
+    pdf = BytesIO()
+    merger.write(pdf)
+    
+    settings_file = os.path.join(config.Settings.Config.secrets_dir,
+                                 p_settings['settings_file'])
+    auth = JWTAuth.from_settings_file(settings_file)
+    client = Client(auth)
+    
+    filename = f'{record}_{datetime.now().strftime("%Y-%m-%dT%H%M%S")}.pdf'
+    folder = get_prcpt_folder(context, p_settings['box_folder'], client)
+    client.folder(folder).upload_stream(pdf, filename)
