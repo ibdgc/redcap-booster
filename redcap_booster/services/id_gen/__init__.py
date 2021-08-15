@@ -40,4 +40,4 @@ def run(config, context, service=service, db=db):
                'format':'json',
                'data':data}
     
-    return redcap_api(config, context, payload)
+    return redcap_api(service, config, context, payload, payload)

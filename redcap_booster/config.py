@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     plugin_dirs: List[str] = ['./services']
     pids: List[str] = []
     
+    request_log: str = './log/request.log'
+    redcap_log: str = './log/redcap.log'
+    box_log: str = './log/box.log'
+    
     class Config:
         env_file = '.env'
         # For storing REDCap API tokens

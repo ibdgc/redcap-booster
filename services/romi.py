@@ -1,9 +1,7 @@
 """Upload report to Box for use by UIC personnel"""
 
-from redcap_booster import redcap_api
-from boxsdk import JWTAuth, Client, BoxAPIException
+from redcap_booster import redcap_api, box
 from io import BytesIO
-from logging.handlers import SysLogHandler, logging
 from datetime import datetime
 from PyPDF2 import PdfFileMerger, PdfFileReader
 from PyPDF2.utils import PdfReadError
@@ -12,20 +10,6 @@ import json
 import requests
 
 service = 'romi'
-
-# Avoid Box API warnings RE existing folders (from get_prcpt_folder())
-logging.basicConfig(level=logging.ERROR)
-
-def get_prcpt_folder(context, fid, client):
-    """Return ID of participant folder in Box, creating if necessary"""
-    
-    record = context['record']
-    
-    try:
-        subfolder = client.folder(fid).create_subfolder(record)
-        return subfolder.id
-    except BoxAPIException as e:
-        return e.context_info['conflicts'][0]['id']
 
 def run(config, context, service=service):
     
@@ -49,7 +33,9 @@ def run(config, context, service=service):
                'fields[1]':study_id,
                'fields[2]':grp,
                'rawOrLabel':'label'}
-    participants = redcap_api(config, context, payload, pid=cmp).content
+    participants = redcap_api(service, config, context, payload, payload,
+                              pid=cmp).content
+    cmp_record = None
     # Increase efficiency by interating in reverse order
     for p in reversed(json.loads(participants)):
         if p[study_id] == record:
@@ -66,7 +52,8 @@ def run(config, context, service=service):
                'records':record,
                'events':baseline,
                'fields':catmh_id0}
-    records = json.loads(redcap_api(config, context, payload).content)
+    records = json.loads(redcap_api(service, config, context, payload,
+                                    payload).content)
     if records:
         interview_id = records[0][catmh_id0]
         url = p_settings['url']
@@ -82,12 +69,13 @@ def run(config, context, service=service):
     payload = {'content':'pdf',
                'record':cmp_record,
                'instrument':cmp_report_form}
-    cmp_pdf = redcap_api(config, context, payload, pid=cmp).content
+    cmp_pdf = redcap_api(service, config, context, payload, payload,
+                         pid=cmp).content
     
     payload = {'content':'pdf',
                'record':record,
                'instrument':romi_report_form}
-    romi_pdf = redcap_api(config, context, payload).content
+    romi_pdf = redcap_api(service, config, context, payload, payload).content
     
     merger = PdfFileMerger()
     for file in [cmp_pdf, cat_pdf, romi_pdf]:
@@ -100,9 +88,8 @@ def run(config, context, service=service):
     
     settings_file = os.path.join(config.Settings.Config.secrets_dir,
                                  p_settings['settings_file'])
-    auth = JWTAuth.from_settings_file(settings_file)
-    client = Client(auth)
+    client = box.get_client(settings_file)
     
     filename = f'{record}_{datetime.now().strftime("%Y-%m-%dT%H%M%S")}.pdf'
-    folder = get_prcpt_folder(context, p_settings['box_folder'], client)
+    folder = box.get_subfolder(record, p_settings['box_folder'], client)
     client.folder(folder).upload_stream(pdf, filename)
