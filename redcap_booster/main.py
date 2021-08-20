@@ -30,7 +30,7 @@ async def root(request: Request, key: str = None):
     logger.info(f'{request.client}: {context}')
     
     # Require API key for authentication
-    pid = getattr(context, 'project_id', None)
+    pid = context.get('project_id', None)
     if not pid:
         raise HTTPException(status_code=401, detail='Project ID missing')
     api_key = getattr(config.settings, f'key_{pid}', 'Auth-Not-Yet-Configured')
