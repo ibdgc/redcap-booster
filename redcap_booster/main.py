@@ -2,9 +2,12 @@
 
 from fastapi import FastAPI, HTTPException
 from starlette.requests import Request
+from starlette.status import HTTP_401_UNAUTHORIZED
+from typing import Optional
 from . import config
 import logging
 from logging.handlers import RotatingFileHandler
+from secrets import compare_digest
 import pathlib
 
 # Log requests
@@ -21,7 +24,7 @@ plugins = config.plugins
 app = FastAPI(root_path=config.settings.root_path)
 
 @app.post('/')
-async def root(request: Request, key: str = None):
+async def root(request: Request, key: Optional[str] = ''):
     
     # Using Request explicitly here since the name of the [instrument]_complete
     # parameter is unknown ahead of time.
@@ -33,9 +36,11 @@ async def root(request: Request, key: str = None):
     pid = context.get('project_id', None)
     if not pid:
         raise HTTPException(status_code=401, detail='Project ID missing')
-    api_key = getattr(config.settings, f'key_{pid}', 'Auth-Not-Yet-Configured')
-    if api_key != key:
-        raise HTTPException(status_code=401, detail='API key missing or invalid')
+    api_key = getattr(config.settings, f'key_{pid}', '')
+    if not key or not compare_digest(key, api_key):
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail='API key missing or invalid'
+        )
     
     for service in plugins.list_plugins():
         
