@@ -17,7 +17,7 @@ def run(config, context, service=service):
     record = context['record']
     p_settings = getattr(config.settings, f'{service}_{pid}')
     baseline = p_settings['baseline']
-    catmh_id0 = p_settings['catmh_id0']
+    catmh_interview = p_settings['catmh_interview0']
     romi_report_form = p_settings['romi_report_form']
     
     cmp = p_settings['cmp']
@@ -36,7 +36,7 @@ def run(config, context, service=service):
     participants = redcap_api(service, config, context, payload, payload,
                               pid=cmp).content
     cmp_record = None
-    # Increase efficiency by interating in reverse order
+    # Increase efficiency by iterating in reverse order
     for p in reversed(json.loads(participants)):
         if p[study_id] == record:
             if p[grp] == 'Control':
@@ -51,11 +51,11 @@ def run(config, context, service=service):
                'format':'json',
                'records':record,
                'events':baseline,
-               'fields':catmh_id0}
+               'fields':catmh_interview}
     records = json.loads(redcap_api(service, config, context, payload,
                                     payload).content)
     if records:
-        interview_id = records[0][catmh_id0]
+        interview_id = records[0][catmh_interview]
         url = p_settings['url']
         keyfile = os.path.join(config.Settings.Config.secrets_dir,
                                'catmh_report_key')
