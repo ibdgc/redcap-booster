@@ -1,0 +1,20 @@
+---
+test_name: REDCap Booster
+
+stages:
+  - name: ID Assignment
+
+    request:
+      url: http://127.0.0.1:8000/
+      params:
+        key: <key you generated>
+      method: POST
+      data:
+        project_id: <REDCap Project ID>
+        instrument: <name of form triggering assignment>
+        record: <sample record ID>
+        redcap_url: <REDCap URL> 
+
+    response:
+      status_code: 200
+      json: null
