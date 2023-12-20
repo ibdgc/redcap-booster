@@ -3,3 +3,4 @@
 .secrets
 *.db
 /log
+prod-test.tavern.yaml
