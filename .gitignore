@@ -6,3 +6,5 @@
 prod-test.tavern.yaml
 *.csv
 *.log
+*.bak
+*__pycache__*
