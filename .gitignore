@@ -4,3 +4,5 @@
 *.db
 /log
 prod-test.tavern.yaml
+*.csv
+*.log
